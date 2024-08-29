@@ -1,0 +1,6 @@
+env/
+__pycache__/
+embeddings.bin
+build/
+dist/
+esco_skill_extractor.egg-info/
