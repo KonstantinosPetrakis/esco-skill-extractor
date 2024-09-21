@@ -11,7 +11,7 @@ import numpy as np
 
 
 class SkillExtractor:
-    def __init__(self, threshold: float = 0.8, device: str = "cpu"):
+    def __init__(self, threshold: float = 0.5, device: str = "cpu"):
         """
         Loads the model, skills and skill embeddings.
 
@@ -35,9 +35,7 @@ class SkillExtractor:
         # Ignore the security warning messages about loading the model from pickle
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self._model = SentenceTransformer(
-                "hkunlp/instructor-base", device=self.device
-            )
+            self._model = SentenceTransformer("all-MiniLM-L6-v2", device=self.device)
 
     def _load_skills(self):
         """
@@ -59,10 +57,7 @@ class SkillExtractor:
             print(
                 "Skill embeddings file not found. Creating embeddings from scratch..."
             )
-            self._skill_embeddings = self._model.encode(
-                self._skills["label"].to_list(),
-                prompt="Represent skill, requirement, technology, art: ",
-            )
+            self._skill_embeddings = self._model.encode(self._skills["label"].to_list())
             with open(f"{self._dir}/data/embeddings.bin", "wb") as f:
                 pickle.dump(self._skill_embeddings, f)
 
@@ -100,16 +95,7 @@ class SkillExtractor:
         all_sentences = [sentence for text in texts for sentence in text]
 
         # Calculate the embeddings for all sentences
-        all_sentences_embeddings = np.array(
-            self._model.encode(
-                all_sentences,
-                prompt="Refuse company name. Refuse company description. Refuse company goals. Refuse company culture. \
-                    Refuse job benefits. Refuse job perks. Refuse salary range. Refuse gender or sex inclusivity. \
-                    Refuse regional information. Refuse recruitment efforts. Refuse recruitment arguments. Refuse contract information. \
-                    Refuse recruitment hustle. Refuse recruitment pitch. Refuse recruitment rant. Refuse titles. Refuse headers. \
-                    Represent skills. Represent requirements. Represent technologies. Represent arts.",
-            )
-        )
+        all_sentences_embeddings = np.array(self._model.encode(all_sentences))
 
         # Calculate the similarity between all sentences and all skills and find the most similar skill for each sentence and its similarity score
         similarity_matrix = cosine_similarity(
