@@ -1,6 +1,6 @@
 # ESCO Skill Extractor
 
-This is a a tool that extract **ESCO skills from texts** such as job descriptions or CVs. It uses a special embedding model that allows prompts, called `instructor`.
+This is a a tool that extract **ESCO skills from texts** such as job descriptions or CVs. It uses a transformer and compares its embedding using cosine similarity. 
 
 ## Installation
 
@@ -50,22 +50,9 @@ print(skill_extractor.get_skills(ads))
 # ]
 ```
 
-## Considerations
-
-While there's been some effort to make the model ignore irrelevant information such as company names, contact information, recruitment hustle and others, the model still tries to extract skills from them sometimes.
-
-For instance a salary range could be interpreted as a skill `determine salaries`.
-
-It is advised to clean the texts before passing them to the model if possible.
-
 ## How it works
 
 1. It creates embeddings from esco skills found in the official ESCO website.
 2. It creates embeddings from the input text (one for each sentence).
 3. It compares the embeddings of the text with the embeddings of the ESCO skills using cosine similarity.
 4. It returns the most similar esco skill per sentence if its similarity passes a predefined threshold.
-
-## References
-
--   [Instructor model](https://huggingface.co/hkunlp/instructor-base)
--   [ESCO](https://ec.europa.eu/esco/portal/home)
