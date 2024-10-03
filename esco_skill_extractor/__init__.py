@@ -62,6 +62,7 @@ class SkillExtractor:
                 self._skills["description"].to_list(),
                 device=self.device,
                 normalize_embeddings=True,
+                convert_to_tensor=True,
             )
             with open(f"{self._dir}/data/embeddings.bin", "wb") as f:
                 pickle.dump(self._skill_embeddings, f)
@@ -99,7 +100,10 @@ class SkillExtractor:
 
         # Calculate the embeddings for all sentences
         all_sentences_embeddings = self._model.encode(
-            all_sentences, device=self.device, normalize_embeddings=True
+            all_sentences,
+            device=self.device,
+            normalize_embeddings=True,
+            convert_to_tensor=True,
         )
 
         # Calculate the similarity between all sentences and all skills and find the most similar skill for each sentence and its similarity score
@@ -126,15 +130,17 @@ class SkillExtractor:
             ]
 
             # Filter the skills based on the threshold
-            most_similar_skills_indices_text = most_similar_skills_indices_text[
-                torch.nonzero(most_similar_skills_scores_text > self.threshold)
-            ]
+            most_similar_skills_indices_text = (
+                most_similar_skills_indices_text[
+                    torch.nonzero(most_similar_skills_scores_text > self.threshold)
+                ]
+                .squeeze(dim=-1)
+                .tolist()
+            )
 
             # Create a list of dictionaries containing the skills for the current text
             skill_ids_per_text.append(
-                np.take(
-                    self._skill_ids, most_similar_skills_indices_text.squeeze(dim=-1)
-                ).tolist()
+                np.take(self._skill_ids, most_similar_skills_indices_text).tolist()
             )
 
             sentences += text_sentences
