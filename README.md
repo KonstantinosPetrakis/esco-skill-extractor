@@ -14,7 +14,7 @@ pip install esco-skill-extractor
 from esco_skill_extractor import SkillExtractor
 
 # `device` kwarg is optional and defaults to 'cpu', `cuda` or others can be used.
-# `threshold` kwarg is optional and defaults to 0.8, it's the cosine similarity threshold.
+# `threshold` kwarg is optional and defaults to 0.4, it's the cosine similarity threshold.
 skill_extractor = SkillExtractor()
 
 ads = [
@@ -28,25 +28,13 @@ print(skill_extractor.get_skills(ads))
 # Output:
 # [
 #     [
-#         {
-#             "id": "bf4d884f-c848-402a-b130-69c266b04164",
-#             "label": "apply basic programming skills"
-#         }
+#         "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d"
 #     ],
 #     [
-#         {
-#             "id": "f0de4973-0a70-4644-8fd4-3a97080476f4",
-#             "label": "DevOps"
-#         },
-#         {
-#             "id": "1b2ec9bb-ba7c-4f93-87ac-ec712c9b68c3", 
-#             "label": "install containers"
-#         },
-#         {
-#             "id": "6b643893-0a1f-4f6c-83a1-e7eef75849b9",
-#             "label": "develop with cloud services"
-#         }
-#     ]
+#         "http://data.europa.eu/esco/skill/f0de4973-0a70-4644-8fd4-3a97080476f4",
+#         "http://data.europa.eu/esco/skill/ae4f0cc6-e0b9-47f5-bdca-2fc2e6316dce",
+#     ],
+# ]
 # ]
 ```
 

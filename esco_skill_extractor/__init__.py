@@ -1,22 +1,22 @@
-from typing import List, Dict, Union, Literal
+from typing import List
 import warnings
 import pickle
 import os
 import re
 
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 import pandas as pd
 import numpy as np
+from sentence_transformers import SentenceTransformer, util
+import torch
 
 
 class SkillExtractor:
-    def __init__(self, threshold: float = 0.5, device: str = "cpu"):
+    def __init__(self, threshold: float = 0.4, device: str = "cpu"):
         """
         Loads the model, skills and skill embeddings.
 
         Args:
-            threshold (float, optional): The similarity threshold for skill comparisons. Increase it to more harsh. Defaults to 0.85. Range: [0, 1].
+            threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.4. Range: [0, 1].
             device (str, optional): The device where the model will run. Defaults to "cpu".
         """
 
@@ -43,6 +43,7 @@ class SkillExtractor:
         """
 
         self._skills = pd.read_csv(f"{self._dir}/data/skills.csv")
+        self._skill_ids = self._skills["id"].to_numpy()
 
     def _create_skill_embeddings(self):
         """
@@ -57,7 +58,11 @@ class SkillExtractor:
             print(
                 "Skill embeddings file not found. Creating embeddings from scratch..."
             )
-            self._skill_embeddings = self._model.encode(self._skills["label"].to_list())
+            self._skill_embeddings = self._model.encode(
+                self._skills["description"].to_list(),
+                device=self.device,
+                normalize_embeddings=True,
+            )
             with open(f"{self._dir}/data/embeddings.bin", "wb") as f:
                 pickle.dump(self._skill_embeddings, f)
 
@@ -80,14 +85,12 @@ class SkillExtractor:
             )
         )
 
-    def get_skills(
-        self, texts: List[str]
-    ) -> List[List[Dict[Union[Literal["id"], Literal["label"]], str]]]:
+    def get_skills(self, texts: List[str]) -> List[List[str]]:
         """
         This method extracts the ESCO skills from the texts.
 
         Returns:
-            List[List[Dict[Union[Literal["id"], Literal["label"]], str]]]: A list of lists containing the skills for each text.
+            List[List[str]]: A list of lists containing the IDs of the skills for each text.
         """
 
         # Flatten the list of sentences so similarity can be calculated in one operation for all sentences
@@ -95,17 +98,21 @@ class SkillExtractor:
         all_sentences = [sentence for text in texts for sentence in text]
 
         # Calculate the embeddings for all sentences
-        all_sentences_embeddings = np.array(self._model.encode(all_sentences))
+        all_sentences_embeddings = self._model.encode(
+            all_sentences, device=self.device, normalize_embeddings=True
+        )
 
         # Calculate the similarity between all sentences and all skills and find the most similar skill for each sentence and its similarity score
-        similarity_matrix = cosine_similarity(
+        # The embeddings are normalized so the dot product is the cosine similarity
+        similarity_matrix = util.dot_score(
             all_sentences_embeddings, self._skill_embeddings
         )
-        most_similar_skills_indices = np.argmax(similarity_matrix, axis=1)
-        most_similar_skills_scores = np.max(similarity_matrix, axis=1)
+        most_similar_skills_scores, most_similar_skills_indices = torch.max(
+            similarity_matrix, dim=-1
+        )
 
         # Unflatten the list of most similar skills indices to match the original texts
-        skills_indices_per_text = []
+        skill_ids_per_text = []
         sentences = 0
         for text in texts:
             text_sentences = len(text)
@@ -120,16 +127,16 @@ class SkillExtractor:
 
             # Filter the skills based on the threshold
             most_similar_skills_indices_text = most_similar_skills_indices_text[
-                np.where(most_similar_skills_scores_text > self.threshold)
+                torch.nonzero(most_similar_skills_scores_text > self.threshold)
             ]
 
             # Create a list of dictionaries containing the skills for the current text
-            skills_indices_per_text.append(
-                self._skills.take(most_similar_skills_indices_text).to_dict(
-                    orient="records"
-                )
+            skill_ids_per_text.append(
+                np.take(
+                    self._skill_ids, most_similar_skills_indices_text.squeeze(dim=-1)
+                ).tolist()
             )
 
             sentences += text_sentences
 
-        return skills_indices_per_text
+        return skill_ids_per_text
