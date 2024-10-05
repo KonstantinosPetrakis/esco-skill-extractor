@@ -135,6 +135,7 @@ class SkillExtractor:
                     torch.nonzero(most_similar_skills_scores_text > self.threshold)
                 ]
                 .squeeze(dim=-1)
+                .unique()
                 .tolist()
             )
 
