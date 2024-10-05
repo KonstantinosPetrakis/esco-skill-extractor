@@ -53,7 +53,7 @@ class SkillExtractor:
 
         if os.path.exists(f"{self._dir}/data/embeddings.bin"):
             with open(f"{self._dir}/data/embeddings.bin", "rb") as f:
-                self._skill_embeddings = pickle.load(f)
+                self._skill_embeddings = pickle.load(f).to(self.device)
         else:
             print(
                 "Skill embeddings file not found. Creating embeddings from scratch..."
