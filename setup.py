@@ -1,11 +1,18 @@
 from setuptools import setup, find_packages
 
 
+requirements = [r.strip() for r in open("requirements.txt").readlines()]
+nvidia_requirements = [
+    r for r in requirements if r.startswith("nvidia") or r.startswith("triton")
+]
+standard_requirements = [r for r in requirements if r not in nvidia_requirements]
+
 setup(
     name="esco-skill-extractor",
-    version="0.1.7",
+    version="0.1.8",
     packages=find_packages(),
-    install_requires=[r.strip() for r in open("requirements.txt").readlines()],
+    install_requires=standard_requirements,
+    extras_require={"cuda": nvidia_requirements},
     include_package_data=True,
     package_data={"esco_skill_extractor": ["data/*.csv"]},
     author="Konstantinos Petrakis",

@@ -1,4 +1,5 @@
 env/
+build_env/
 __pycache__/
 embeddings.bin
 build/

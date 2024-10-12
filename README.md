@@ -8,11 +8,19 @@ This is a a tool that extract **ESCO skills from texts** such as job description
 pip install esco-skill-extractor
 ```
 
+or for Nvidia GPU acceleration:
+
+```bash
+pip install esco-skill-extractor[cuda]
+```
+
+
 ## Usage
 
 ```python
 from esco_skill_extractor import SkillExtractor
 
+# Don't be scared, the 1st time will take a longer to download the models and create the embeddings.
 # `device` kwarg is optional and defaults to 'cpu', `cuda` or others can be used.
 # `threshold` kwarg is optional and defaults to 0.4, it's the cosine similarity threshold.
 skill_extractor = SkillExtractor()
