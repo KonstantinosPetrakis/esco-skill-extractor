@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="{{ url_for('static', filename='eu.webp') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='index.css') }}"
+    />
+    <script>
+      const ENDPOINT = `http://{{ host }}:{{ port }}/extract`;
+    </script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <title>ESCO Skill Extractor</title>
+  </head>
+  <body>
+    <img
+      src="{{ url_for('static', filename='eu.webp') }}"
+      alt="The flag of EU."
+    />
+    <div class="container">
+      <h1>ESCO Skill Extractor</h1>
+      <form>
+        <textarea
+          id="text"
+          placeholder="Paste your text here to extract skills..."
+          rows="20"
+        ></textarea>
+        <button type="submit" onclick="submitForm(event, ENDPOINT)">
+          Extract skills
+        </button>
+      </form>
+      <output id="output"> Extracted skills will appear here... </output>
+    </div>
+  </body>
+</html>

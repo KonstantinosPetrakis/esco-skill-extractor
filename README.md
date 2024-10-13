@@ -16,6 +16,8 @@ pip install esco-skill-extractor[cuda]
 
 ## Usage
 
+### Via python
+
 ```python
 from esco_skill_extractor import SkillExtractor
 
@@ -40,6 +42,56 @@ print(skill_extractor.get_skills(ads))
 #         "http://data.europa.eu/esco/skill/ae4f0cc6-e0b9-47f5-bdca-2fc2e6316dce",
 #     ],
 # ]
+```
+
+### Via GUI
+
+```bash
+# Visit the URL printed in the console.
+# run python -m esco_skill_extractor --help for more options.
+python -m esco_skill_extractor 
+```
+
+<img src="docs/gui.gif">
+
+### Via API
+
+```bash
+# Visit the URL printed in the console.
+# run python -m esco_skill_extractor --help for more options.
+python -m esco_skill_extractor 
+```
+
+```js
+async function getSkills() {
+    const texts = [
+        "We are looking for a software engineer with experience in Java and Python.",
+        "We are looking for a devops engineer. Containerization tools such as Docker is a must. AWS is a plus."
+        // ...
+    ];
+
+    // Default host is localhost, and default port is 8000. Check CLI options for more.
+    const response = await fetch("http://localhost:8000/extract", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(texts),
+    });
+
+    const skills = await response.json();
+    console.log(skills);
+    // Output:
+    // [
+    //     [
+    //         "http://data.europa.eu/esco/skill/ccd0a1d9-afda-43d9-b901-96344886e14d"
+    //     ],
+    //     [
+    //         "http://data.europa.eu/esco/skill/f0de4973-0a70-4644-8fd4-3a97080476f4",
+    //         "http://data.europa.eu/esco/skill/ae4f0cc6-e0b9-47f5-bdca-2fc2e6316dce",
+    //     ],
+    // ]
+}
 ```
 
 ## Possible keyword arguments for `SkillExtractor`

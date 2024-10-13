@@ -1,1 +1,3 @@
 include esco_skill_extractor/data/*.csv
+include esco_skill_extractor/static/*
+include esco_skill_extractor/templates/*

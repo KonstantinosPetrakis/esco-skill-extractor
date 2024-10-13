@@ -9,7 +9,7 @@ standard_requirements = [r for r in requirements if r not in nvidia_requirements
 
 setup(
     name="esco-skill-extractor",
-    version="0.1.9",
+    version="0.1.10",
     packages=find_packages(),
     install_requires=standard_requirements,
     extras_require={"cuda": nvidia_requirements},

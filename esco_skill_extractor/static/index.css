@@ -1,0 +1,91 @@
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+img {
+  display: block;
+  height: 100px;
+  border: 1px solid;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+  background-color: #4073af;
+  color: #fff;
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid black;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 600px;
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #fff;
+  border-radius: 0.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+textarea {
+  border: 1px solid #fff;
+  font-size: 0.9rem;
+  resize: none;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid;
+  border-radius: 0.5rem;
+}
+
+button {
+  border: 1px solid;
+  font-size: 1rem;
+  background-color: rgba(191, 208, 228, 0.4);
+}
+
+button:hover {
+  cursor: pointer;
+  background-color: rgba(191, 208, 228, 0.6);
+}
+
+button:focus-visible,
+textarea:focus-visible {
+  border: 0;
+  outline: 2px solid orange;
+}
+
+output {
+  max-height: 300px;
+  padding: 1rem;
+  border: 1px dashed;
+  border-radius: 0.5rem;
+  overflow-y: auto;
+}
+
+a {
+  color: #4073af;
+  text-decoration: none;
+}

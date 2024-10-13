@@ -87,13 +87,7 @@ class SkillExtractor:
         if self.max_words != -1 and len(text.split()) * 1.2 > self.max_words:
             text = summarize(text, words=self.max_words)
 
-        # Ignore short sentences such as '.e.g', '.etc' and stuff
-        return list(
-            filter(
-                lambda x: len(x) > 5,
-                re.split(r"(\r|\n|\t|\.|;)+", text),
-            )
-        )
+        return list(re.split(r"(\r|\n|\t|\.|;)+", text))
 
     def get_skills(self, texts: List[str]) -> List[List[str]]:
         """
