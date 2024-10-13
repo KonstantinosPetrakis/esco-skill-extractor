@@ -1,6 +1,6 @@
 # ESCO Skill Extractor
 
-This is a a tool that extract **ESCO skills from texts** such as job descriptions or CVs. It uses a transformer and compares its embedding using cosine similarity. 
+This is a a tool that extract **ESCO skills from texts** such as job descriptions or CVs. It uses a transformer and compares its embedding using cosine similarity.
 
 ## Installation
 
@@ -14,15 +14,12 @@ or for Nvidia GPU acceleration:
 pip install esco-skill-extractor[cuda]
 ```
 
-
 ## Usage
 
 ```python
 from esco_skill_extractor import SkillExtractor
 
-# Don't be scared, the 1st time will take a longer to download the models and create the embeddings.
-# `device` kwarg is optional and defaults to 'cpu', `cuda` or others can be used.
-# `threshold` kwarg is optional and defaults to 0.4, it's the cosine similarity threshold.
+# Don't be scared, the 1st time will take longer to download the model and create the embeddings.
 skill_extractor = SkillExtractor()
 
 ads = [
@@ -43,12 +40,20 @@ print(skill_extractor.get_skills(ads))
 #         "http://data.europa.eu/esco/skill/ae4f0cc6-e0b9-47f5-bdca-2fc2e6316dce",
 #     ],
 # ]
-# ]
 ```
+
+## Possible keyword arguments for `SkillExtractor`
+
+| Keyword Argument | Description                                                                                                            | Default |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------- | ------- |
+| threshold        | Skills surpassing this cosine similarity threshold are considered a match.                                             | 0.4     |
+| device           | The device where the copulations will take place. E.g torch device.                                                    | "cpu"   |
+| max_words        | If any sentence in the input surpasses the set word_length considerably, its summarized close to that number of words. | -1      |
 
 ## How it works
 
 1. It creates embeddings from esco skills found in the official ESCO website.
 2. It creates embeddings from the input text (one for each sentence).
+   1. If any sentence surpasses the `max_words` limit, it is summarized to that number of words by using an [implementation of the TextRank algorithm](https://github.com/summanlp/textrank).
 3. It compares the embeddings of the text with the embeddings of the ESCO skills using cosine similarity.
 4. It returns the most similar esco skill per sentence if its similarity passes a predefined threshold.

@@ -7,21 +7,26 @@ import re
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
+from summa.summarizer import summarize
 import torch
 
 
 class SkillExtractor:
-    def __init__(self, threshold: float = 0.4, device: str = "cpu"):
+    def __init__(
+        self, threshold: float = 0.4, device: str = "cpu", max_words: int = -1
+    ):
         """
         Loads the model, skills and skill embeddings.
 
         Args:
             threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.4. Range: [0, 1].
             device (str, optional): The device where the model will run. Defaults to "cpu".
+            max_words (int, optional): If the inputted text is longer than this number of words, it will be summarized close to this number of words. Defaults to -1 (no summarization).
         """
 
         self.threshold = threshold
         self.device = device
+        self.max_words = max_words
         self._dir = __file__.replace("__init__.py", "")
         self._load_models()
         self._load_skills()
@@ -77,6 +82,10 @@ class SkillExtractor:
         Returns:
             List[str]: A list of sentences.
         """
+
+        # Summarize the text if it is too long
+        if self.max_words != -1 and len(text.split()) * 1.2 > self.max_words:
+            text = summarize(text, words=self.max_words)
 
         # Ignore short sentences such as '.e.g', '.etc' and stuff
         return list(
