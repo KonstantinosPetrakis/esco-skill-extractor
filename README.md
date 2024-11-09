@@ -8,12 +8,6 @@ This is a a tool that extract **ESCO skills** and **ISCO occupations** from text
 pip install esco-skill-extractor
 ```
 
-or for Nvidia GPU acceleration:
-
-```bash
-pip install esco-skill-extractor[cuda]
-```
-
 ## Usage
 
 ### Via python

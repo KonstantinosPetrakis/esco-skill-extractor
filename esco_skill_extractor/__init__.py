@@ -2,12 +2,10 @@ from typing import List
 import warnings
 import pickle
 import os
-import re
 
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
-from summa.summarizer import summarize
 import torch
 
 
