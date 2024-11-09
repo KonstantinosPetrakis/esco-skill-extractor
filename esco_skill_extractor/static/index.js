@@ -1,16 +1,16 @@
 /**
- * This function is called when the form is submitted to ask the server to extract
- * the skills from the text. Then it updates the DOM with the extracted skills.
+ * This function is called when the form is submitted to ask the server to extract an entity from the text.
+ * Then it updates the DOM with the extracted entities.
  * @param {Event} event the event object of the form submission.
- * @param {string} endpoint the endpoint to send the data to.
  */
-async function submitForm(event, endpoint) {
+async function extractEntity(event) {
   event.preventDefault();
 
+  const entity = document.querySelector('input[name="entity"]:checked').value;
   const text = document.getElementById("text").value;
   const output = document.getElementById("output");
 
-  const response = await fetch(endpoint, {
+  const response = await fetch(`${window.SERVER}/extract-${entity}`, {
     method: "POST",
     body: JSON.stringify([text]),
     headers: {
@@ -35,6 +35,10 @@ async function submitForm(event, endpoint) {
     </ul>`;
 }
 
+/**
+ * This function is used to copy some text to the clipboard.
+ * @param {string} text the text to be copied to the clipboard.
+ */
 async function copyToClipboard(text) {
   try {
     const button = document.getElementById("copyButton");
@@ -46,9 +50,36 @@ async function copyToClipboard(text) {
   }
 }
 
-// Submit the form with ctrl+enter when the textarea is focused.
-document.addEventListener("DOMContentLoaded", () =>
+/**
+ * This function renders the texts based on the selected entity.
+ */
+function renderTexts() {
+  const entity = document.querySelector('input[name="entity"]:checked').value;
+  const textarea = document.getElementById("text");
+  const submitButton = document.getElementById("submit-button");
+  const output = document.getElementById("output");
+
+  textarea.setAttribute(
+    "placeholder",
+    `Paste your text here to extract ${entity}`
+  );
+
+  submitButton.innerHTML = `Extract ${entity}`;
+
+  output.innerHTML = `Extracted ${entity} will appear here`;
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // Render texts based on the selected entity.
+  renderTexts();
+
+  // Update the texts when the entity is changed.
+  document
+    .querySelectorAll('input[name="entity"]')
+    .forEach((radio) => radio.addEventListener("change", renderTexts));
+
+  // Submit the form with ctrl+enter when the textarea is focused.
   document.getElementById("text").addEventListener("keydown", (event) => {
-    if (event.key === "Enter" && event.ctrlKey) submitForm(event, "/extract");
-  })
-);
+    if (event.key === "Enter" && event.ctrlKey) extractEntity(event);
+  });
+});

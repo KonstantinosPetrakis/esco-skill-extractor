@@ -13,7 +13,7 @@
       href="{{ url_for('static', filename='index.css') }}"
     />
     <script>
-      const ENDPOINT = `http://{{ host }}:{{ port }}/extract`;
+      window.SERVER = `http://{{ host }}:{{ port }}`;
     </script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <title>ESCO Skill Extractor</title>
@@ -26,16 +26,33 @@
     <div class="container">
       <h1>ESCO Skill Extractor</h1>
       <form>
+        <!-- Entity to extract -->
+        <fieldset>
+          <legend>Choose the entity to extract</legend>
+          <label>
+            Skills
+            <input type="radio" name="entity" value="skills" checked />
+          </label>
+          <label>
+            Occupations
+            <input type="radio" name="entity" value="occupations" />
+          </label>
+        </fieldset>
+        <!-- Text -->
         <textarea
           id="text"
-          placeholder="Paste your text here to extract skills..."
+          placeholder="Paste your text here to extract skills or occupations."
           rows="20"
         ></textarea>
-        <button type="submit" onclick="submitForm(event, ENDPOINT)">
-          Extract skills
-        </button>
+        <!-- Submit -->
+        <button
+          id="submit-button"
+          type="submit"
+          onclick="extractEntity(event)"
+        ></button>
       </form>
-      <output id="output"> Extracted skills will appear here... </output>
+      <!-- Output -->
+      <output id="output"> </output>
     </div>
   </body>
 </html>

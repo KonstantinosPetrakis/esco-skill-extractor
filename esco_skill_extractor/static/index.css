@@ -50,6 +50,16 @@ form {
   gap: 1rem;
 }
 
+fieldset {
+  border: 1px solid black;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+input[type="radio"] {
+  accent-color: orange;
+}
+
 textarea {
   border: 1px solid #fff;
   font-size: 0.9rem;
@@ -72,7 +82,8 @@ button:hover {
 }
 
 button:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+input:focus-visible {
   border: 0;
   outline: 2px solid orange;
 }

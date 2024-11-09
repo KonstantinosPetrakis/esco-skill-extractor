@@ -8,14 +8,14 @@ from . import SkillExtractor
 
 # ----------- Parse command line arguments -----------
 parser = argparse.ArgumentParser(
-    description="ESCO Skill Extractor: Extract ESCO skills from any text."
+    description="ESCO Skill Extractor: Extract ESCO skills and ISCO occupations from any text."
 )
 parser.add_argument(
     "--threshold",
     "-t",
     type=float,
     default=0.4,
-    help="Threshold for skill extraction. Default is 0.4.",
+    help="Threshold for entity extraction. Default is 0.4.",
 )
 parser.add_argument(
     "--device",
@@ -23,13 +23,6 @@ parser.add_argument(
     type=str,
     default="cpu",
     help="Device to use for computations. Default is cpu.",
-)
-parser.add_argument(
-    "--max_words",
-    "-m",
-    type=int,
-    default=-1,
-    help="Maximum number of words to process. Else summarization is used. -1 for no limit. Default is -1.",
 )
 parser.add_argument(
     "--host",
@@ -49,11 +42,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 # ----------- Initialize the skill extractor -----------
-extractor = SkillExtractor(
-    threshold=args.threshold,
-    device=args.device,
-    max_words=args.max_words,
-)
+extractor = SkillExtractor(threshold=args.threshold, device=args.device)
 
 # ----------- Define the Flask app -----------
 BASE_DIR = __file__.replace("__main__.py", "")
@@ -64,20 +53,27 @@ app = Flask(
 )
 
 
+@app.after_request
+def handle_options(response):
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Requested-With"
+    return response
+
+
 @app.route("/")
 def index():
     return render_template("index.html", host=args.host, port=args.port)
 
 
-@app.route("/extract", methods=["POST"])
+@app.route("/extract-skills", methods=["POST"])
 def extract():
-    texts = request.json
+    return jsonify(extractor.get_skills(request.json))
 
-    # The tool doesn't do well with empty texts
-    if all(not text for text in texts):
-        return jsonify([[] * len(texts)])
 
-    return jsonify(extractor.get_skills(texts))
+@app.route("/extract-occupations", methods=["POST"])
+def extract_occupations():
+    return jsonify(extractor.get_occupations(request.json))
 
 
 # 20 minutes timeout, our model might take a while to infer for really big loads
