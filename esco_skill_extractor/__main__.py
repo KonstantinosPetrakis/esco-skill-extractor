@@ -11,11 +11,18 @@ parser = argparse.ArgumentParser(
     description="ESCO Skill Extractor: Extract ESCO skills and ISCO occupations from any text."
 )
 parser.add_argument(
-    "--threshold",
-    "-t",
+    "--skill_threshold",
+    "-s",
     type=float,
     default=0.4,
-    help="Threshold for entity extraction. Default is 0.4.",
+    help="Threshold for skill extraction. Default is 0.4.",
+)
+parser.add_argument(
+    "--occupation_threshold",
+    "-o",
+    type=float,
+    default=0.45,
+    help="Threshold for occupation extraction. Default is 0.45.",
 )
 parser.add_argument(
     "--device",
@@ -42,7 +49,11 @@ parser.add_argument(
 args = parser.parse_args()
 
 # ----------- Initialize the skill extractor -----------
-extractor = SkillExtractor(threshold=args.threshold, device=args.device)
+extractor = SkillExtractor(
+    skills_threshold=args.skill_threshold,
+    occupation_threshold=args.occupation_threshold,
+    device=args.device,
+)
 
 # ----------- Define the Flask app -----------
 BASE_DIR = __file__.replace("__main__.py", "")

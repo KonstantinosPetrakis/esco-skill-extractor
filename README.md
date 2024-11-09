@@ -121,10 +121,11 @@ async function getSkills() {
 
 ## Possible keyword arguments for `SkillExtractor`
 
-| Keyword Argument | Description                                                                | Default |
-| ---------------- | -------------------------------------------------------------------------- | ------- |
-| threshold        | Skills surpassing this cosine similarity threshold are considered a match. | 0.4     |
-| device           | The device where the copulations will take place. E.g torch device.        | "cpu"   |
+| Keyword Argument     | Description                                                                     | Default |
+| -------------------- | ------------------------------------------------------------------------------- | ------- |
+| skill_threshold      | Skills surpassing this cosine similarity threshold are considered a match.      | 0.4     |
+| occupation_threshold | Occupations surpassing this cosine similarity threshold are considered a match. | 0.45    |
+| device               | The device where the copulations will take place. E.g torch device.             | "cpu"   |
 
 ## How it works
 

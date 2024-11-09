@@ -10,7 +10,12 @@ import torch
 
 
 class SkillExtractor:
-    def __init__(self, threshold: float = 0.4, device: str = "cpu"):
+    def __init__(
+        self,
+        skills_threshold: float = 0.4,
+        occupation_threshold=0.45,
+        device: str = "cpu",
+    ):
         """
         Loads the model, skills and skill embeddings.
 
@@ -20,7 +25,8 @@ class SkillExtractor:
             max_words (int, optional): If the inputted text is longer than this number of words, it will be summarized close to this number of words. Defaults to -1 (no summarization).
         """
 
-        self.threshold = threshold
+        self.skills_threshold = skills_threshold
+        self.occupation_threshold = occupation_threshold
         self.device = device
         self._dir = __file__.replace("__init__.py", "")
         self._load_models()
@@ -104,6 +110,7 @@ class SkillExtractor:
         texts: List[str],
         entity_ids: np.ndarray[str],
         entity_embeddings: torch.Tensor,
+        threshold: float,
     ) -> List[List[str]]:
         """
         This method extracts the entities from the texts.
@@ -131,7 +138,7 @@ class SkillExtractor:
         entity_ids_per_text = []
         for similarity_scores in similarity_matrix:
             entity_indices = (
-                torch.nonzero(similarity_scores > self.threshold)
+                torch.nonzero(similarity_scores > threshold)
                 .squeeze(dim=-1)
                 .unique()
                 .tolist()
@@ -148,7 +155,9 @@ class SkillExtractor:
             List[List[str]]: A list of lists containing the IDs of the skills for each text.
         """
 
-        return self._get_entity(texts, self._skill_ids, self._skill_embeddings)
+        return self._get_entity(
+            texts, self._skill_ids, self._skill_embeddings, self.skills_threshold
+        )
 
     def get_occupations(self, texts: List[str]) -> List[List[str]]:
         """
@@ -159,5 +168,8 @@ class SkillExtractor:
         """
 
         return self._get_entity(
-            texts, self._occupation_ids, self._occupation_embeddings
+            texts,
+            self._occupation_ids,
+            self._occupation_embeddings,
+            self.occupation_threshold,
         )
