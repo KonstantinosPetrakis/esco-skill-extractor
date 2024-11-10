@@ -14,15 +14,15 @@ parser.add_argument(
     "--skill_threshold",
     "-s",
     type=float,
-    default=0.4,
-    help="Threshold for skill extraction. Default is 0.4.",
+    default=0.45,
+    help="Threshold for skill extraction. Default is 0.45",
 )
 parser.add_argument(
     "--occupation_threshold",
     "-o",
     type=float,
-    default=0.45,
-    help="Threshold for occupation extraction. Default is 0.45.",
+    default=0.55,
+    help="Threshold for occupation extraction. Default is 0.55.",
 )
 parser.add_argument(
     "--device",

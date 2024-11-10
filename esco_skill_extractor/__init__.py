@@ -1,7 +1,9 @@
+from itertools import chain
 from typing import List
 import warnings
 import pickle
 import os
+import re
 
 import pandas as pd
 import numpy as np
@@ -12,17 +14,17 @@ import torch
 class SkillExtractor:
     def __init__(
         self,
-        skills_threshold: float = 0.4,
-        occupation_threshold=0.45,
+        skills_threshold: float = 0.45,
+        occupation_threshold: float = 0.55,
         device: str = "cpu",
     ):
         """
         Loads the model, skills and skill embeddings.
 
         Args:
-            threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.4. Range: [0, 1].
+            skills_threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.45. Range: [0, 1].
+            occupation_threshold (float, optional): The similarity threshold for occupation comparisons. Increase it to be more harsh. Defaults to 0.55. Range: [0, 1].
             device (str, optional): The device where the model will run. Defaults to "cpu".
-            max_words (int, optional): If the inputted text is longer than this number of words, it will be summarized close to this number of words. Defaults to -1 (no summarization).
         """
 
         self.skills_threshold = skills_threshold
@@ -105,6 +107,19 @@ class SkillExtractor:
             with open(f"{self._dir}/data/occupation_embeddings.bin", "wb") as f:
                 pickle.dump(self._occupation_embeddings, f)
 
+    def _text_to_sentences(self, text: str) -> List[str]:
+        """
+        This method splits the text into sentences.
+
+        Args:
+            text (str): The text to split into sentences.
+
+        Returns:
+            List[str]: A list of sentences.
+        """
+
+        return [s for s in re.split(r"\r|\n|\t|\.|\,|\;|and|or", text.strip()) if s]
+
     def _get_entity(
         self,
         texts: List[str],
@@ -119,31 +134,62 @@ class SkillExtractor:
             texts (List[str]): The texts from which the entities will be extracted.
             entity_ids (np.ndarray[str]): The IDs of the entities.
             entity_embeddings (torch.Tensor): The embeddings of the entities.
+            threshold (float): The similarity threshold for entity comparisons. Increase it to be more harsh.
 
         Returns:
             List[List[str]]: A list of lists containing the IDs of the entities for each text.
         """
 
-        # Calculate the embeddings for all texts
-        text_embeddings = self._model.encode(
-            texts,
+        # Split the texts into sentences and then flatten them to perform calculations faster
+        texts = [self._text_to_sentences(text) for text in texts]
+        sentences = list(chain.from_iterable(texts))
+
+        # Calculate the embeddings for all flattened sentences
+        sentence_embeddings = self._model.encode(
+            sentences,
             device=self.device,
             normalize_embeddings=True,
             convert_to_tensor=True,
         )
 
-        # Calculate the similarity between all texts and all entities and find entities surpassing the threshold for each text
-        similarity_matrix = util.dot_score(text_embeddings, entity_embeddings)
+        # Calculate the similarity between all flattened sentences and all entities and
+        # find the most similar entity for each sentence.
+        # The embeddings are normalized so the dot product is the cosine similarity
+        similarity_matrix = util.dot_score(sentence_embeddings, entity_embeddings)
+        most_similar_entity_scores, most_similar_entity_indices = torch.max(
+            similarity_matrix, dim=-1
+        )
 
+        # Un-flatten the list of most similar entities to match the original texts
         entity_ids_per_text = []
-        for similarity_scores in similarity_matrix:
-            entity_indices = (
-                torch.nonzero(similarity_scores > threshold)
+        sentences = 0
+
+        for text in texts:
+            sentences_in_text = len(text)
+
+            most_similar_entity_indices_text = most_similar_entity_indices[
+                sentences : sentences + sentences_in_text
+            ]
+            most_similar_entity_scores_text = most_similar_entity_scores[
+                sentences : sentences + sentences_in_text
+            ]
+
+            # Filter the entities based on the threshold
+            most_similar_entity_indices_text = (
+                most_similar_entity_indices_text[
+                    torch.nonzero(most_similar_entity_scores_text > threshold)
+                ]
                 .squeeze(dim=-1)
                 .unique()
                 .tolist()
             )
-            entity_ids_per_text.append(np.take(entity_ids, entity_indices).tolist())
+
+            # Create a list of dictionaries containing the entities for the current text
+            entity_ids_per_text.append(
+                np.take(entity_ids, most_similar_entity_indices_text).tolist()
+            )
+
+            sentences += sentences_in_text
 
         return entity_ids_per_text
 
@@ -156,7 +202,10 @@ class SkillExtractor:
         """
 
         return self._get_entity(
-            texts, self._skill_ids, self._skill_embeddings, self.skills_threshold
+            texts,
+            self._skill_ids,
+            self._skill_embeddings,
+            self.skills_threshold,
         )
 
     def get_occupations(self, texts: List[str]) -> List[List[str]]:
