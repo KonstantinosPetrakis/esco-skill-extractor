@@ -140,6 +140,9 @@ class SkillExtractor:
             List[List[str]]: A list of lists containing the IDs of the entities for each text.
         """
 
+        if all(not text for text in texts):
+            return [[] for _ in texts]
+
         # Split the texts into sentences and then flatten them to perform calculations faster
         texts = [self._text_to_sentences(text) for text in texts]
         sentences = list(chain.from_iterable(texts))
