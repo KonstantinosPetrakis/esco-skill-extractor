@@ -1,3 +1,4 @@
+from typing import Union
 import argparse
 
 from flask import Flask, render_template, request, jsonify
@@ -27,9 +28,9 @@ parser.add_argument(
 parser.add_argument(
     "--device",
     "-d",
-    type=str,
-    default="cpu",
-    help="Device to use for computations. Default is cpu.",
+    type=Union[str, None],
+    default=None,
+    help="Device to use for computations. Default is cuda if available, else CPU.",
 )
 parser.add_argument(
     "--host",

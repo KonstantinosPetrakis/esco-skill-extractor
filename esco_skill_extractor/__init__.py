@@ -1,5 +1,5 @@
 from itertools import chain
-from typing import List
+from typing import Union, List
 import warnings
 import pickle
 import os
@@ -16,7 +16,7 @@ class SkillExtractor:
         self,
         skills_threshold: float = 0.45,
         occupation_threshold: float = 0.55,
-        device: str = "cpu",
+        device: Union[str, None] = None,
     ):
         """
         Loads the model, skills and skill embeddings.
@@ -24,12 +24,14 @@ class SkillExtractor:
         Args:
             skills_threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.45. Range: [0, 1].
             occupation_threshold (float, optional): The similarity threshold for occupation comparisons. Increase it to be more harsh. Defaults to 0.55. Range: [0, 1].
-            device (str, optional): The device where the model will run. Defaults to "cpu".
+            device (Union[str, None], optional): The device where the model will run. Defaults to "cuda" if available, otherwise "cpu".
         """
 
         self.skills_threshold = skills_threshold
         self.occupation_threshold = occupation_threshold
-        self.device = device
+        self.device = (
+            device if device else "cuda" if torch.cuda.is_available() else "cpu"
+        )
         self._dir = __file__.replace("__init__.py", "")
         self._load_models()
         self._load_skills()
