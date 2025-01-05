@@ -1,10 +1,13 @@
 from itertools import chain
 from typing import Union, List
+import subprocess
 import warnings
 import pickle
+import sys
 import os
 
 from sentence_transformers import SentenceTransformer, util
+
 import pandas as pd
 import numpy as np
 import spacy
@@ -45,11 +48,24 @@ class SkillExtractor:
         """
 
         # Ignore the security warning messages about loading the model from pickle
+        # or loading an older spacy model
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._model = SentenceTransformer("all-MiniLM-L6-v2", device=self.device)
 
-        self._skillner = spacy.load("en_skillner")
+            try:
+                self._skillner = spacy.load("en_skillner")
+            except Exception:
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "https://huggingface.co/nestauk/en_skillner/resolve/main/en_skillner-any-py3-none-any.whl",
+                    ]
+                )
+                self._skillner = spacy.load("en_skillner")
 
     def _load_skills(self):
         """
