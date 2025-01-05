@@ -2,3 +2,5 @@ sentence-transformers
 Flask
 pandas
 waitress
+spacy
+https://huggingface.co/nestauk/en_skillner/resolve/main/en_skillner-any-py3-none-any.whl

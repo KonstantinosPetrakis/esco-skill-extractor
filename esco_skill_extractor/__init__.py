@@ -3,23 +3,23 @@ from typing import Union, List
 import warnings
 import pickle
 import os
-import re
 
+from sentence_transformers import SentenceTransformer, util
 import pandas as pd
 import numpy as np
-from sentence_transformers import SentenceTransformer, util
+import spacy
 import torch
 
 
 class SkillExtractor:
     def __init__(
         self,
-        skills_threshold: float = 0.45,
+        skills_threshold: float = 0.6,
         occupation_threshold: float = 0.55,
         device: Union[str, None] = None,
     ):
         """
-        Loads the model, skills and skill embeddings.
+        Loads the models, skills and skill embeddings.
 
         Args:
             skills_threshold (float, optional): The similarity threshold for skill comparisons. Increase it to be more harsh. Defaults to 0.45. Range: [0, 1].
@@ -48,6 +48,8 @@ class SkillExtractor:
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._model = SentenceTransformer("all-MiniLM-L6-v2", device=self.device)
+
+        self._skillner = spacy.load("en_skillner")
 
     def _load_skills(self):
         """
@@ -109,18 +111,19 @@ class SkillExtractor:
             with open(f"{self._dir}/data/occupation_embeddings.bin", "wb") as f:
                 pickle.dump(self._occupation_embeddings, f)
 
-    def _text_to_sentences(self, text: str) -> List[str]:
+    def _texts_to_tokens(self, texts: List[str]) -> List[List[str]]:
         """
-        This method splits the text into sentences.
+        This method splits the texts into tokens.
 
         Args:
-            text (str): The text to split into sentences.
+            text (str): The texts to be split.
 
         Returns:
-            List[str]: A list of sentences.
+            List[str]: A list of lists containing the tokens for each text.
         """
 
-        return [s for s in re.split(r"\r|\n|\t|\.|\,|\;|and|or", text.strip()) if s]
+        docs = self._skillner.pipe(texts)
+        return [[ent.text.strip() for ent in doc.ents] for doc in docs]
 
     def _get_entity(
         self,
@@ -142,22 +145,27 @@ class SkillExtractor:
             List[List[str]]: A list of lists containing the IDs of the entities for each text.
         """
 
+        # If there are no texts, return an empty list
         if all(not text for text in texts):
             return [[] for _ in texts]
 
-        # Split the texts into sentences and then flatten them to perform calculations faster
-        texts = [self._text_to_sentences(text) for text in texts]
-        sentences = list(chain.from_iterable(texts))
+        # Split the texts into tokens and then flatten them to perform calculations faster
+        texts = self._texts_to_tokens(texts)
+        tokens = list(chain.from_iterable(texts))
 
-        # Calculate the embeddings for all flattened sentences
+        # If there are no tokens, return an empty list
+        if not tokens:
+            return [[] for _ in texts]
+
+        # Calculate the embeddings for all flattened tokens
         sentence_embeddings = self._model.encode(
-            sentences,
+            tokens,
             device=self.device,
             normalize_embeddings=True,
             convert_to_tensor=True,
         )
 
-        # Calculate the similarity between all flattened sentences and all entities and
+        # Calculate the similarity between all flattened tokens and all entities and
         # find the most similar entity for each sentence.
         # The embeddings are normalized so the dot product is the cosine similarity
         similarity_matrix = util.dot_score(sentence_embeddings, entity_embeddings)

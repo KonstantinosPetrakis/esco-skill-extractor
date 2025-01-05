@@ -15,8 +15,8 @@ parser.add_argument(
     "--skill_threshold",
     "-s",
     type=float,
-    default=0.45,
-    help="Threshold for skill extraction. Default is 0.45",
+    default=0.6,
+    help="Threshold for skill extraction. Default is 0.6",
 )
 parser.add_argument(
     "--occupation_threshold",
@@ -28,7 +28,7 @@ parser.add_argument(
 parser.add_argument(
     "--device",
     "-d",
-    type=Union[str, None],
+    type=str,
     default=None,
     help="Device to use for computations. Default is cuda if available, else CPU.",
 )

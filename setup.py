@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="esco-skill-extractor",
-    version="0.1.15",
+    version="0.1.16",
     packages=find_packages(),
     install_requires=[r.strip() for r in open("requirements.txt").readlines()],
     include_package_data=True,

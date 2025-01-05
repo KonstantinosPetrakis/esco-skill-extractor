@@ -123,13 +123,13 @@ async function getSkills() {
 
 | Keyword Argument     | Description                                                                     | Default                        |
 | -------------------- | ------------------------------------------------------------------------------- | ------------------------------ |
-| skill_threshold      | Skills surpassing this cosine similarity threshold are considered a match.      | 0.45                           |
+| skill_threshold      | Skills surpassing this cosine similarity threshold are considered a match.      | 0.6                            |
 | occupation_threshold | Occupations surpassing this cosine similarity threshold are considered a match. | 0.55                           |
 | device               | The device where the copulations will take place. AKA torch device.             | "cuda" if available else "cpu" |
 
 ## How it works
 
-1. It creates embeddings for esco skills and ISCO occupations.
-2. It creates embeddings for the sentences of the input texts.
-3. It compares the embeddings of of the selected entity and the sentences using cosine similarity and it takes the maximum value.
-4. An entity matches a sentence if the cosine similarity is above a certain threshold.
+1. Generates embeddings for ESCO skills and ISCO occupations.
+2. Extracts skills from provided texts using [SkillNer](https://huggingface.co/nestauk/en_skillner)
+3. Creates embeddings for the extracted skills.
+4. Compares the embeddings of ESCO skills or ISCO occupations with those of the extracted skills using cosine similarity and matches them if the similarity is above a certain threshold.
