@@ -1,16 +1,14 @@
 from itertools import chain
 from typing import Union, List
-import subprocess
 import warnings
 import pickle
-import sys
 import os
+import re
 
 from sentence_transformers import SentenceTransformer, util
 
 import pandas as pd
 import numpy as np
-import spacy
 import torch
 
 
@@ -48,24 +46,9 @@ class SkillExtractor:
         """
 
         # Ignore the security warning messages about loading the model from pickle
-        # or loading an older spacy model
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             self._model = SentenceTransformer("all-MiniLM-L6-v2", device=self.device)
-
-            try:
-                self._skillner = spacy.load("en_skillner")
-            except Exception:
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "https://huggingface.co/nestauk/en_skillner/resolve/main/en_skillner-any-py3-none-any.whl",
-                    ]
-                )
-                self._skillner = spacy.load("en_skillner")
 
     def _load_skills(self):
         """
@@ -132,14 +115,16 @@ class SkillExtractor:
         This method splits the texts into tokens.
 
         Args:
-            text (str): The texts to be split.
+            texts (List[str]): The texts to be split.
 
         Returns:
             List[str]: A list of lists containing the tokens for each text.
         """
 
-        docs = self._skillner.pipe(texts)
-        return [[ent.text.strip() for ent in doc.ents] for doc in docs]
+        return [
+            [s for s in re.split(r"\r|\n|\t|\.|\,|\;|and|or", text.strip()) if s]
+            for text in texts
+        ]
 
     def _get_entity(
         self,

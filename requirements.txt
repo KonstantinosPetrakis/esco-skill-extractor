@@ -2,4 +2,3 @@ sentence-transformers
 Flask
 pandas
 waitress
-spacy
