@@ -8,6 +8,12 @@ This is a a tool that extract **ESCO skills** and **ISCO occupations** from text
 pip install esco-skill-extractor
 ```
 
+## Installation via Docker
+
+```bash
+docker run -it -p 5000:5000 konstantinospetrakis/esco-skill-extractor 
+```
+
 ## Usage
 
 ### Via python
@@ -130,6 +136,5 @@ async function getSkills() {
 ## How it works
 
 1. Generates embeddings for ESCO skills and ISCO occupations.
-2. Extracts skills from provided texts using [SkillNer](https://huggingface.co/nestauk/en_skillner)
-3. Creates embeddings for the extracted skills.
-4. Compares the embeddings of ESCO skills or ISCO occupations with those of the extracted skills using cosine similarity and matches them if the similarity is above a certain threshold.
+2. Creates embeddings for the extracted skills.
+3. Compares the embeddings of ESCO skills or ISCO occupations with those of the extracted skills using cosine similarity and matches them if the similarity is above a certain threshold.
