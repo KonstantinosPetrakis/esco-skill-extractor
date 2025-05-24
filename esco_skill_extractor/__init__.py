@@ -13,8 +13,11 @@ import torch
 
 
 class SkillExtractor:
+    _dir = __file__.replace("__init__.py", "")
+
     def __init__(
         self,
+        model: str = "all-MiniLM-L6-v2",
         skills_threshold: float = 0.6,
         occupation_threshold: float = 0.55,
         device: Union[str, None] = None,
@@ -28,12 +31,12 @@ class SkillExtractor:
             device (Union[str, None], optional): The device where the model will run. Defaults to "cuda" if available, otherwise "cpu".
         """
 
+        self.model_name = model
         self.skills_threshold = skills_threshold
         self.occupation_threshold = occupation_threshold
         self.device = (
             device if device else "cuda" if torch.cuda.is_available() else "cpu"
         )
-        self._dir = __file__.replace("__init__.py", "")
         self._load_models()
         self._load_skills()
         self._load_occupations()
@@ -48,14 +51,14 @@ class SkillExtractor:
         # Ignore the security warning messages about loading the model from pickle
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            self._model = SentenceTransformer("all-MiniLM-L6-v2", device=self.device)
+            self._model = SentenceTransformer(self.model_name, device=self.device)
 
     def _load_skills(self):
         """
         This method loads the skills from the skills.csv file.
         """
 
-        self._skills = pd.read_csv(f"{self._dir}/data/skills.csv")
+        self._skills = pd.read_csv(f"{SkillExtractor._dir}/data/skills.csv")
         self._skill_ids = self._skills["id"].to_numpy()
 
     def _load_occupations(self):
@@ -63,7 +66,7 @@ class SkillExtractor:
         This method loads the occupations from the occupations.csv file.
         """
 
-        self._occupations = pd.read_csv(f"{self._dir}/data/occupations.csv")
+        self._occupations = pd.read_csv(f"{SkillExtractor._dir}/data/occupations.csv")
         self._occupation_ids = self._occupations["id"].to_numpy()
 
     def _create_skill_embeddings(self):
@@ -72,8 +75,8 @@ class SkillExtractor:
         If the cache file exists, it loads the embeddings from it.
         """
 
-        if os.path.exists(f"{self._dir}/data/skill_embeddings.bin"):
-            with open(f"{self._dir}/data/skill_embeddings.bin", "rb") as f:
+        if os.path.exists(f"{SkillExtractor._dir}/data/skill_embeddings.bin"):
+            with open(f"{SkillExtractor._dir}/data/skill_embeddings.bin", "rb") as f:
                 self._skill_embeddings = pickle.load(f).to(self.device)
         else:
             print(
@@ -85,7 +88,7 @@ class SkillExtractor:
                 normalize_embeddings=True,
                 convert_to_tensor=True,
             )
-            with open(f"{self._dir}/data/skill_embeddings.bin", "wb") as f:
+            with open(f"{SkillExtractor._dir}/data/skill_embeddings.bin", "wb") as f:
                 pickle.dump(self._skill_embeddings, f)
 
     def _create_occupation_embeddings(self):
@@ -94,8 +97,10 @@ class SkillExtractor:
         If the cache file exists, it loads the embeddings from it.
         """
 
-        if os.path.exists(f"{self._dir}/data/occupation_embeddings.bin"):
-            with open(f"{self._dir}/data/occupation_embeddings.bin", "rb") as f:
+        if os.path.exists(f"{SkillExtractor._dir}/data/occupation_embeddings.bin"):
+            with open(
+                f"{SkillExtractor._dir}/data/occupation_embeddings.bin", "rb"
+            ) as f:
                 self._occupation_embeddings = pickle.load(f).to(self.device)
         else:
             print(
@@ -107,7 +112,9 @@ class SkillExtractor:
                 normalize_embeddings=True,
                 convert_to_tensor=True,
             )
-            with open(f"{self._dir}/data/occupation_embeddings.bin", "wb") as f:
+            with open(
+                f"{SkillExtractor._dir}/data/occupation_embeddings.bin", "wb"
+            ) as f:
                 pickle.dump(self._occupation_embeddings, f)
 
     def _texts_to_tokens(self, texts: List[str]) -> List[List[str]]:
@@ -206,6 +213,18 @@ class SkillExtractor:
             sentences += sentences_in_text
 
         return entity_ids_per_text
+
+    @staticmethod
+    def remove_embeddings():
+        """
+        This method removes the skill and occupation embeddings from the disk in case the model changed.
+        This is useful to avoid loading the embeddings from the previous model.
+        """
+
+        if os.path.exists(f"{SkillExtractor._dir}/data/skill_embeddings.bin"):
+            os.remove(f"{SkillExtractor._dir}/data/skill_embeddings.bin")
+        if os.path.exists(f"{SkillExtractor._dir}/data/occupation_embeddings.bin"):
+            os.remove(f"{SkillExtractor._dir}/data/occupation_embeddings.bin")
 
     def get_skills(self, texts: List[str]) -> List[List[str]]:
         """

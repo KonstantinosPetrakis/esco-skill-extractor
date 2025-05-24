@@ -11,7 +11,7 @@ pip install esco-skill-extractor
 ## Installation via Docker
 
 ```bash
-docker run -it -p 5000:5000 konstantinospetrakis/esco-skill-extractor 
+docker run -it -p 5000:5000 konstantinospetrakis/esco-skill-extractor
 ```
 
 ## Usage
@@ -127,11 +127,21 @@ async function getSkills() {
 
 ## Possible keyword arguments for `SkillExtractor`
 
-| Keyword Argument     | Description                                                                     | Default                        |
-| -------------------- | ------------------------------------------------------------------------------- | ------------------------------ |
-| skill_threshold      | Skills surpassing this cosine similarity threshold are considered a match.      | 0.6                            |
-| occupation_threshold | Occupations surpassing this cosine similarity threshold are considered a match. | 0.55                           |
-| device               | The device where the copulations will take place. AKA torch device.             | "cuda" if available else "cpu" |
+| Keyword Argument     | Description                                                                                                                                              | Default                        |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ |
+| skill_threshold      | Skills surpassing this cosine similarity threshold are considered a match.                                                                               | 0.6                            |
+| occupation_threshold | Occupations surpassing this cosine similarity threshold are considered a match.                                                                          | 0.55                           |
+| device               | The device where the copulations will take place. AKA torch device.                                                                                      | "cuda" if available else "cpu" |
+| model                | The name of the model to use for embeddings. See[ available models](https://sbert.net/docs/sentence_transformer/pretrained_models.html#original-models). | "all-MiniLM-L6-v2"             |
+
+## Notes
+
+If you change a model, don't forget to call the `remove_embeddings` static method to remove the old embeddings from disk.
+
+```python
+SkillExtractor.remove_embeddings()
+skill_extractor = SkillExtractor(model="new-model-name")
+```
 
 ## How it works
 

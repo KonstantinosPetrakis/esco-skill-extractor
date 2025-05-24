@@ -1,4 +1,3 @@
-from typing import Union
 import argparse
 
 from flask import Flask, render_template, request, jsonify
@@ -10,6 +9,13 @@ from . import SkillExtractor
 # ----------- Parse command line arguments -----------
 parser = argparse.ArgumentParser(
     description="ESCO Skill Extractor: Extract ESCO skills and ISCO occupations from any text."
+)
+parser.add_argument(
+    "--model",
+    "-m",
+    type=str,
+    default="all-MiniLM-L6-v2",
+    help="Model to use for skill extraction. Default is 'all-MiniLM-L6-v2'.",
 )
 parser.add_argument(
     "--skill_threshold",
@@ -51,6 +57,7 @@ args = parser.parse_args()
 
 # ----------- Initialize the skill extractor -----------
 extractor = SkillExtractor(
+    model=args.model,
     skills_threshold=args.skill_threshold,
     occupation_threshold=args.occupation_threshold,
     device=args.device,
